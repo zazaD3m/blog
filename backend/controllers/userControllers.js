@@ -1,13 +1,15 @@
-import { uploadPicture } from "../middleware/uploadPictureMiddleware";
+// import { uploadPicture } from "../middleware/uploadPictureMiddleware";
+// import { fileRemover } from "../utils/fileRemover";
 import User from "../models/User";
-import { fileRemover } from "../utils/fileRemover";
+// import { multer } from "../middleware/uploadPictureMiddleware";
+import cloudinary from "../middleware/cloudinary";
 
 const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
     // check if user exists or not
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email }).lean();
 
     if (user) {
       throw new Error("User with this email already registered");
@@ -64,7 +66,7 @@ const loginUser = async (req, res, next) => {
 
 const userProfile = async (req, res, next) => {
   try {
-    let user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id).lean();
 
     if (user) {
       return res.status(201).json({
@@ -117,53 +119,86 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+// const updateProfilePicture = async (req, res, next) => {
+//   try {
+//     const upload = uploadPicture.single("profilePicture");
+
+//     upload(req, res, async function (err) {
+//       if (err) {
+//         const error = new Error(
+//           "An unknown error occured when uploading" + err.message
+//         );
+//         next(error);
+//       } else {
+//         // everything went well
+//         if (req.file) {
+//           const updatedUser = await User.findByIdAndUpdate(
+//             req.user._id,
+//             {
+//               avatar: req.file.filename,
+//             },
+//             { new: true }
+//           );
+//           res.json({
+//             _id: updatedUser._id,
+//             avatar: updatedUser.avatar,
+//             name: updatedUser.name,
+//             email: updatedUser.email,
+//             verified: updatedUser.verified,
+//             admin: updatedUser.admin,
+//             token: await updatedUser.generateJWT(),
+//           });
+//         } else {
+//           let filename;
+//           let updatedUser = await User.findById(req.user._id);
+//           filename = updatedUser.avatar;
+//           updatedUser.avatar = "";
+//           await updatedUser.save();
+//           fileRemover(filename);
+//           res.json({
+//             _id: updatedUser._id,
+//             avatar: updatedUser.avatar,
+//             name: updatedUser.name,
+//             email: updatedUser.email,
+//             verified: updatedUser.verified,
+//             admin: updatedUser.admin,
+//             token: await updatedUser.generateJWT(),
+//           });
+//         }
+//       }
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const updateProfilePicture = async (req, res, next) => {
   try {
-    const upload = uploadPicture.single("profilePicture");
-
-    upload(req, res, async function (err) {
-      if (err) {
-        const error = new Error(
-          "An unknown error occured when uploading" + err.message
-        );
-        next(error);
-      } else {
-        // everything went well
-        if (req.file) {
-          const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            {
-              avatar: req.file.filename,
-            },
-            { new: true }
-          );
-          res.json({
-            _id: updatedUser._id,
-            avatar: updatedUser.avatar,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            verified: updatedUser.verified,
-            admin: updatedUser.admin,
-            token: await updatedUser.generateJWT(),
-          });
-        } else {
-          let filename;
-          let updatedUser = await User.findById(req.user._id);
-          filename = updatedUser.avatar;
-          updatedUser.avatar = "";
-          await updatedUser.save();
-          fileRemover(filename);
-          res.json({
-            _id: updatedUser._id,
-            avatar: updatedUser.avatar,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            verified: updatedUser.verified,
-            admin: updatedUser.admin,
-            token: await updatedUser.generateJWT(),
-          });
-        }
-      }
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "profile_pictures",
+      transformation: [
+        { fetch_format: "jpg" },
+        { quality: "auto:eco" },
+        { gravity: "face", height: 400, width: 400, crop: "fill" },
+      ],
+    });
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        avatar: result.secure_url,
+        avatarId: result.public_id,
+      },
+      { new: true }
+    );
+    res.json({
+      _id: updatedUser._id,
+      avatar: updatedUser.avatar,
+      avatarId: updatedUser.avatarId,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      verified: updatedUser.verified,
+      admin: updatedUser.admin,
+      token: await updatedUser.generateJWT(),
     });
   } catch (error) {
     next(error);

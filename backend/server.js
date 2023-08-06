@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
+const logger = require("morgan");
 import {
   errorResponseHandler,
   invalidPathHandler,
@@ -13,6 +14,7 @@ dotenv.config();
 connectDB();
 const app = express();
 app.use(express.json());
+app.use(logger("dev"));
 
 app.get("/", (req, res) => {
   res.send("Server is running...");

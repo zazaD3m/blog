@@ -5,6 +5,7 @@ import { sign } from "jsonwebtoken";
 const UserSchema = new Schema(
   {
     avatar: { type: String, default: "" },
+    avatarId: { type: String, default: "" },
     name: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
