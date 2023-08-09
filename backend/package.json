@@ -5,11 +5,14 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon -r esm server.js",
-    "dev": "node -r esm server.js"
+    "server": "nodemon -r esm server.js",
+    "client": "cd ../frontend && npm run dev",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^8.2.0",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1"
   },

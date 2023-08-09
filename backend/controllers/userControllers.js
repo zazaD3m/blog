@@ -177,9 +177,8 @@ const updateProfilePicture = async (req, res, next) => {
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: "profile_pictures",
       transformation: [
-        { fetch_format: "jpg" },
         { quality: "auto:eco" },
-        { gravity: "face", height: 400, width: 400, crop: "fill" },
+        { height: 400, width: 400, crop: "fill" },
       ],
     });
     const updatedUser = await User.findByIdAndUpdate(

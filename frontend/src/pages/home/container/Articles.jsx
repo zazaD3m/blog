@@ -11,10 +11,6 @@ const Articles = () => {
         <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
         <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
         <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
-        <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
-        <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
-        <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
-        <ArticleCard className="w-full md:w-[calc(50%-20px)] lg:w-[calc(33.3%-21px)]" />
       </div>
       <button className="mx-auto flex items-center gap-x-2 font-bold text-primary border-2 border-primary px-6 py-3 rounded-lg">
         <span>More articles</span>
