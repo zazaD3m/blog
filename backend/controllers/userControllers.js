@@ -174,31 +174,56 @@ const updateProfile = async (req, res, next) => {
 
 const updateProfilePicture = async (req, res, next) => {
   try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "profile_pictures",
-      transformation: [
-        { quality: "auto:eco" },
-        { height: 400, width: 400, crop: "fill" },
-      ],
-    });
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        avatar: result.secure_url,
-        avatarId: result.public_id,
-      },
-      { new: true }
-    );
-    res.json({
-      _id: updatedUser._id,
-      avatar: updatedUser.avatar,
-      avatarId: updatedUser.avatarId,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      verified: updatedUser.verified,
-      admin: updatedUser.admin,
-      token: await updatedUser.generateJWT(),
-    });
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "profile_pictures",
+        transformation: [
+          { quality: "auto:eco" },
+          { height: 400, width: 400, crop: "fill" },
+        ],
+      });
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          avatar: result.secure_url,
+          avatarId: result.public_id,
+        },
+        { new: true }
+      );
+      res.json({
+        _id: updatedUser._id,
+        avatar: updatedUser.avatar,
+        avatarId: updatedUser.avatarId,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        verified: updatedUser.verified,
+        admin: updatedUser.admin,
+        token: await updatedUser.generateJWT(),
+      });
+    } else {
+      await cloudinary.uploader.destroy(req.user.avatarId, {
+        invalidate: true,
+      });
+
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          avatar: "",
+          avatarId: "",
+        },
+        { new: true }
+      );
+      res.json({
+        _id: updatedUser._id,
+        avatar: updatedUser.avatar,
+        avatarId: updatedUser.avatarId,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        verified: updatedUser.verified,
+        admin: updatedUser.admin,
+        token: await updatedUser.generateJWT(),
+      });
+    }
   } catch (error) {
     next(error);
   }

@@ -2,18 +2,25 @@ import { useState } from "react";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
 import NavItem from "./NavItem";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { images } from "../constants";
 import { MdArrowDropDown, MdArrowDropUp } from "react-icons/md";
 import { logout } from "../store/actions/user";
 
 const navItemsInfo = [
-  { name: "Home", type: "link" },
-  { name: "Articles", type: "link" },
-  { name: "Pages", type: "dropdown", items: ["About us", "Contact us"] },
-  { name: "Pricing", type: "link" },
-  { name: "Faq", type: "link" },
+  { name: "Home", type: "link", href: "/" },
+  { name: "Articles", type: "link", href: "/articles" },
+  {
+    name: "Pages",
+    type: "dropdown",
+    items: [
+      { title: "About us", href: "/about" },
+      { title: "Contact us", href: "/contact" },
+    ],
+  },
+  { name: "Pricing", type: "link", href: "/pricing" },
+  { name: "Faq", type: "link", href: "/faq" },
 ];
 
 const Header = () => {
@@ -43,9 +50,9 @@ const Header = () => {
   return (
     <section className="sticky top-0 left-0 right-0 z-50 bg-white">
       <header className="container mx-auto px-5 flex justify-between py-4 items-center">
-        <div>
+        <Link to="/">
           <img className="w-16" src={images.Logo} alt="logo" />
-        </div>
+        </Link>
         <div className="lg:hidden z-50">
           {navIsVisible ? (
             <AiOutlineClose
@@ -97,7 +104,7 @@ const Header = () => {
                       profileDropDown ? "block" : "hidden lg:hidden"
                     }  transition-all duration-500 pt-4 lg:absolute lg:bottom-0 -lg:right-0  lg:transform lg:translate-y-full  w-max `}
                   >
-                    <ul className="bg-dark-soft lg:bg-transparent text-center flex flex-col shadow-lg rounded-lg overflow-hidden ">
+                    <ul className="bg-dark-soft lg:bg-white text-center flex flex-col shadow-lg rounded-lg overflow-hidden ">
                       <button
                         onClick={() => navigate("/profile")}
                         type="button"

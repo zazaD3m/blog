@@ -9,6 +9,8 @@ import {
 
 //Routes
 import userRoutes from "./routes/userRoutes";
+import postRoutes from "./routes/postRoutes";
+import commentRoures from "./routes/commentRoutes";
 
 dotenv.config();
 connectDB();
@@ -21,6 +23,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/comments", commentRoures);
 
 app.use(invalidPathHandler);
 app.use(errorResponseHandler);
