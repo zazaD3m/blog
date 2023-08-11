@@ -18,12 +18,12 @@ const SuggestedPosts = ({ className, header, posts = [], tags }) => {
           >
             <img
               className="aspect-square object-cover rounded-lg w-1/5"
-              src={item.img}
-              alt="laptop"
+              src={item?.photo ? item.photo : images.samplePostImage}
+              alt={item.title}
             />
             <div className="text-sm font-roboto text-dark-hard font-medium ">
               <h3 className="text-sm font-roboto text-dark-hard font-medium md:text-base lg:text-lg">
-                {item.title}
+                <Link to={`/blog/${item.slug}`}>{item.title}</Link>
               </h3>
               <span className="text-xs opacity-60">
                 {new Date(item.createdAt).toLocaleDateString("en-US", {
@@ -36,20 +36,24 @@ const SuggestedPosts = ({ className, header, posts = [], tags }) => {
           </div>
         ))}
       </div>
-      <h2 className="font-roboto font-medium text-dark-hard mt-8 md:text-xl">
-        Tags
-      </h2>
-      <div className="flex flex-wrap gap-x-2 gap-y-2 mt-4">
-        {tags.map((item, index) => (
-          <Link
-            to={"/"}
-            className="inline-block rounded-md px-3 py-1.5 bg-primary font-roboto text-xs text-white md:text-sm"
-            key={item + index}
-          >
-            {item}
-          </Link>
-        ))}
-      </div>
+      {tags.length === 0 ? null : (
+        <>
+          <h2 className="font-roboto font-medium text-dark-hard mt-8 md:text-xl">
+            Tags
+          </h2>
+          <div className="flex flex-wrap gap-x-2 gap-y-2 mt-4">
+            {tags.map((item, index) => (
+              <Link
+                to={"/"}
+                className="inline-block rounded-md px-3 py-1.5 bg-primary font-roboto text-xs text-white md:text-sm"
+                key={item + index}
+              >
+                {item}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

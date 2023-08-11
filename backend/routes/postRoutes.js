@@ -3,6 +3,7 @@ import express from "express";
 import {
   createPost,
   deletePost,
+  getAllPosts,
   getPost,
   updatePost,
 } from "../controllers/postControllers";
@@ -11,7 +12,7 @@ import multer from "../middleware/uploadPictureMiddleware";
 
 const router = express.Router();
 
-router.post("/", authGuard, adminGuard, createPost);
+router.route("/").post(authGuard, adminGuard, createPost).get(getAllPosts);
 router
   .route("/:slug")
   .put(authGuard, adminGuard, multer.single("file"), updatePost)

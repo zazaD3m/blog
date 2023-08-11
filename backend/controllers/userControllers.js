@@ -179,7 +179,7 @@ const updateProfilePicture = async (req, res, next) => {
         folder: "profile_pictures",
         transformation: [
           { quality: "auto:eco" },
-          { height: 400, width: 400, crop: "fill" },
+          { height: 200, width: 200, crop: "pad" },
         ],
       });
       const updatedUser = await User.findByIdAndUpdate(
