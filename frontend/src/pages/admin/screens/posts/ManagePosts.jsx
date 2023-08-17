@@ -1,10 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAllPosts } from "../../../../services/index/posts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deletePost, getAllPosts } from "../../../../services/index/posts";
 import { toast } from "react-hot-toast";
 import { images } from "../../../../constants";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Pagination from "../../../../components/Pagination";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+let isFirstRun = true;
 
 const ManagePosts = () => {
+  const queryClient = useQueryClient();
+  const userState = useSelector((state) => state.user);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -22,6 +29,31 @@ const ManagePosts = () => {
     },
   });
 
+  const { mutate: mutateDeletePost, isLoadingDeletePost } = useMutation({
+    mutationFn: ({ slug, token }) => {
+      return deletePost({
+        slug,
+        token: token,
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["posts"]);
+      toast.success("Post has been deleted");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      console.log(error);
+    },
+  });
+
+  useEffect(() => {
+    if (isFirstRun) {
+      isFirstRun = false;
+      return;
+    }
+    refetch();
+  }, [refetch, currentPage]);
+
   const searchKeywordHandler = (e) => {
     const { value } = e.target;
     setSearchKeyword(value);
@@ -29,8 +61,12 @@ const ManagePosts = () => {
 
   const submitSearchKeywordHandler = (e) => {
     e.preventDefault();
-    console.log(searchKeyword);
+    setCurrentPage(1);
     refetch();
+  };
+
+  const deletePostHandler = ({ slug, token }) => {
+    mutateDeletePost({ slug, token });
   };
 
   return (
@@ -45,7 +81,7 @@ const ManagePosts = () => {
                 onSubmit={submitSearchKeywordHandler}
                 className="flex flex-col justify-center w-3/4 max-w-sm space-y-3 md:flex-row md:w-full md:space-x-3 md:space-y-0"
               >
-                <div className=" relative ">
+                <div className="  ">
                   <input
                     type="text"
                     id='"form-subscribe-Filter'
@@ -106,13 +142,19 @@ const ManagePosts = () => {
                         Loading...
                       </td>
                     </tr>
+                  ) : postsData?.data?.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-10 w-full">
+                        No posts found
+                      </td>
+                    </tr>
                   ) : (
                     postsData?.data.map((post) => (
                       <tr key={post._id}>
                         <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
                           <div className="flex items-center">
                             <div className="flex-shrink-0">
-                              <a href="/" className="relative block">
+                              <a href="/" className=" block">
                                 <img
                                   alt={post.title}
                                   src={post?.photo || images.samplePostImage}
@@ -158,77 +200,41 @@ const ManagePosts = () => {
                               : "No Tags"}
                           </div>
                         </td>
-                        <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
-                          <a
-                            href="/"
-                            className="text-indigo-600 hover:text-indigo-900"
+                        <td className="px-5 py-5 text-sm bg-white border-b border-gray-200 space-x-5">
+                          <button
+                            disabled={isLoadingDeletePost}
+                            type="button"
+                            className="text-red-600 hover:text-red-900 disabled:opacity-70 disabled:cursor-not-allowed"
+                            onClick={() => {
+                              deletePostHandler({
+                                slug: post?.slug,
+                                token: userState.userInfo.token,
+                              });
+                            }}
+                          >
+                            Delete
+                          </button>
+                          <Link
+                            to={`/admin/posts/manage/edit/${post?.slug}`}
+                            className="text-green-600 hover:text-green-900"
                           >
                             Edit
-                          </a>
+                          </Link>
                         </td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
-              <div className="flex flex-col items-center px-5 py-5 bg-white xs:flex-row xs:justify-between">
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    className="w-full p-4 text-base text-gray-600 bg-white border rounded-l-xl hover:bg-gray-100"
-                  >
-                    <svg
-                      width="9"
-                      fill="currentColor"
-                      height="8"
-                      className=""
-                      viewBox="0 0 1792 1792"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z"></path>
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full px-4 py-2 text-base text-indigo-500 bg-white border-t border-b hover:bg-gray-100 "
-                  >
-                    1
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full px-4 py-2 text-base text-gray-600 bg-white border hover:bg-gray-100"
-                  >
-                    2
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full px-4 py-2 text-base text-gray-600 bg-white border-t border-b hover:bg-gray-100"
-                  >
-                    3
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full px-4 py-2 text-base text-gray-600 bg-white border hover:bg-gray-100"
-                  >
-                    4
-                  </button>
-                  <button
-                    type="button"
-                    className="w-full p-4 text-base text-gray-600 bg-white border-t border-b border-r rounded-r-xl hover:bg-gray-100"
-                  >
-                    <svg
-                      width="9"
-                      fill="currentColor"
-                      height="8"
-                      className=""
-                      viewBox="0 0 1792 1792"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              {!isLoading && (
+                <Pagination
+                  onPageChange={(page) => setCurrentPage(page)}
+                  currentPage={currentPage}
+                  totalPageCount={JSON.parse(
+                    postsData?.headers?.["x-totalpagecount"]
+                  )}
+                />
+              )}
             </div>
           </div>
         </div>

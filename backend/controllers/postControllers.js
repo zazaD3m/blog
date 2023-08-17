@@ -111,6 +111,8 @@ const deletePost = async (req, res, next) => {
 
 const getPost = async (req, res, next) => {
   try {
+    const posts = await Post.aggregate().sample(4);
+
     const post = await Post.findOne({ slug: req.params.slug }).populate([
       // comments come from posts virtual property
       {
@@ -149,7 +151,20 @@ const getPost = async (req, res, next) => {
       return next(error);
     }
 
-    return res.json(post);
+    const postToJson = JSON.stringify(post);
+    let objPost = JSON.parse(postToJson);
+
+    if (posts) {
+      objPost.suggestedPosts = posts.map((item) => ({
+        _id: item._id,
+        title: item.title,
+        createdAt: item.createdAt,
+        photo: item.photo,
+        slug: item.slug,
+      }));
+    }
+
+    return res.json(objPost);
   } catch (error) {
     next(error);
   }
@@ -166,12 +181,19 @@ const getAllPosts = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * pageSize;
-    const total = await Post.countDocuments();
+    const total = await Post.find(where).countDocuments();
     const pages = Math.ceil(total / pageSize);
 
+    res.header({
+      "x-filter": filter,
+      "x-totalcount": JSON.stringify(total),
+      "x-currentpage": JSON.stringify(page),
+      "x-pagesize": JSON.stringify(pageSize),
+      "x-totalpagecount": JSON.stringify(pages),
+    });
+
     if (page > pages) {
-      const error = new Error("No page found");
-      return next(error);
+      return res.json([]);
     }
 
     const result = await query
@@ -184,14 +206,6 @@ const getAllPosts = async (req, res, next) => {
         },
       ])
       .sort({ updatedAt: "desc" });
-
-    res.header({
-      "x-filter": filter,
-      "x-totalcount": JSON.stringify(total),
-      "x-currentpage": JSON.stringify(page),
-      "x-pagesize": JSON.stringify(pageSize),
-      "x-totalpagecount": JSON.stringify(pages),
-    });
 
     return res.json(result);
   } catch (error) {

@@ -1,5 +1,6 @@
 import { Routes, Route, Router } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+
 import HomePage from "./pages/home/HomePage";
 import "./App.css";
 import ArticleDetailPage from "./pages/articleDetail/ArticleDetailPage";
@@ -11,6 +12,7 @@ import Admin from "./pages/admin/screens/Admin";
 import Comments from "./pages/admin/screens/comments/Comments";
 import NewPost from "./pages/admin/screens/posts/NewPost";
 import ManagePosts from "./pages/admin/screens/posts/ManagePosts";
+import EditPost from "./pages/admin/screens/posts/EditPost";
 
 function App() {
   return (
@@ -25,8 +27,8 @@ function App() {
           <Route index element={<Admin />} />
           <Route path="comments" element={<Comments />} />
           <Route path="posts/new" element={<NewPost />} />
-          <Route path="posts/new" element={<NewPost />} />
           <Route path="posts/manage" element={<ManagePosts />} />
+          <Route path="posts/manage/edit/:slug" element={<EditPost />} />
         </Route>
       </Routes>
       <Toaster />

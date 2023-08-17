@@ -1,13 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { generateHTML } from "@tiptap/html";
-import Bold from "@tiptap/extension-bold";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Italic from "@tiptap/extension-italic";
-import parse from "html-react-parser";
+import { useSelector } from "react-redux";
 
 import BreadCrumbs from "../../components/BreadCrumbs";
 import MainLayout from "../../components/MainLayout";
@@ -17,14 +11,13 @@ import SocialShareButtons from "../../components/SocialShareButtons";
 import ArticleDetailSkeleton from "./components/ArticleDetailSkeleton";
 import ErrorMessage from "../../components/ErrorMessage";
 import { images } from "../../constants";
-import { getAllPosts, getSinglePost } from "../../services/index/posts";
-import { useSelector } from "react-redux";
+import { getSinglePost } from "../../services/index/posts";
+import Editor from "../../components/editor/Editor";
 
 const ArticleDetailPage = () => {
   const { slug } = useParams();
   const userState = useSelector((state) => state.user);
   const [breadCrumbsData, setBreadCrumbsData] = useState([]);
-  const [body, setBody] = useState(null);
 
   const { data, isLoading, isError } = useQuery({
     queryFn: () => getSinglePost({ slug }),
@@ -40,21 +33,11 @@ const ArticleDetailPage = () => {
           name: "Blog",
         },
         {
-          link: `/blog/${data.slug}`,
-          name: "Article title",
+          link: `/blog/${data?.slug}`,
+          name: `${data?.title}`,
         },
       ]);
-      setBody(
-        parse(
-          generateHTML(data?.body, [Document, Paragraph, Text, Bold, Italic])
-        )
-      );
     },
-  });
-
-  const { data: postsData } = useQuery({
-    queryFn: () => getAllPosts(),
-    queryKey: ["posts"],
   });
 
   return (
@@ -68,7 +51,7 @@ const ArticleDetailPage = () => {
           <article className="flex-1">
             <BreadCrumbs data={breadCrumbsData} />
             <img
-              className="rounded-xl w-full"
+              className="rounded-xl w-full max-h-[300px] sm:max-h-[500px]"
               src={data?.photo ? data?.photo : images.samplePostImage}
               alt={data?.title}
             />
@@ -86,7 +69,11 @@ const ArticleDetailPage = () => {
             <h1 className="text-xl font-medium font-roboto mt-4 text-dark-hard md:text-[26px]">
               {data?.title}
             </h1>
-            <div className="mt-4 prose prose-sm sm:prose-base">{body}</div>
+            <div className="w-full">
+              {!isLoading && !isError && (
+                <Editor content={data?.body} editable={false} />
+              )}
+            </div>
             <CommentsContainer
               className="mt-10"
               loggedInUserId={userState.userInfo?._id}
@@ -97,7 +84,7 @@ const ArticleDetailPage = () => {
           <div>
             <SuggestedPosts
               header="Latest Article"
-              posts={postsData?.data}
+              posts={data?.suggestedPosts}
               tags={data?.tags}
               className="mt-8 lg:mt-0 lg:max-w-xs"
             />

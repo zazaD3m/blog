@@ -1,4 +1,3 @@
-import { BsTags } from "react-icons/bs";
 import { images } from "../../../constants";
 import { Link } from "react-router-dom";
 
